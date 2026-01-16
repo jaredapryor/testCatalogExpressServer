@@ -1,15 +1,16 @@
-// Server.js - providing test REST APIs
+// Server.js - providing test REST APIs for Test Catalog
 
+require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
 const artistNames = require("./data/artistNames");
 const albumNames = require("./data/albumNames");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors({
-  origin: 'http://localhost:4200',
+  origin: process.env.CORS_ORIGIN,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -170,5 +171,5 @@ app.use(express.static('public'));
 // Start server
 // ------------------------------
 app.listen(PORT, () => {
-  console.log(`Test Catalog server running on http://localhost:${PORT}`);
+  console.log(`Test Catalog server running on ${process.env.SERVER_URL}:${PORT}`);
 });
