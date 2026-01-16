@@ -1,11 +1,18 @@
 // Server.js - providing test REST APIs
 
 const express = require("express");
+const cors = require("cors");
 const artistNames = require("./data/artistNames");
 const albumNames = require("./data/albumNames");
 
 const app = express();
 const PORT = 3000;
+
+app.use(cors({
+  origin: 'http://localhost:4200',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
 // ------------------------------
 // Generate 30 artists with albums
