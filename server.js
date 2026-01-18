@@ -125,6 +125,30 @@ app.get("/artists", (req, res) => {
   res.json(artists);
 });
 
+// GET /albums → list all albums from all artists
+app.get("/albums", (req, res) => {
+  res.json(allAlbums);
+});
+
+// GET /artists/number → list the number of artists
+app.get("/artists/number", (req, res) => {
+  if (!artists) {
+    return res.json({ numberOfArtists: 0 });
+  } else {
+    return res.json({ numberOfArtists: artists.length });
+  }
+});
+
+// GET /albums/number → list the number of albums
+app.get("/albums/number", (req, res) => {
+  if (!allAlbums) {
+    return res.json({ numberOfAlbums: 0 });
+  } else {
+    return res.json({ numberOfAlbums: allAlbums.length });
+  }
+});
+
+
 // GET /artists/:artistId → get a single artist
 app.get("/artists/:artistId", (req, res) => {
   const id = parseInt(req.params.artistId, 10);
@@ -149,18 +173,111 @@ app.get("/artists/:artistId/:albumId", (req, res) => {
 
   const album = artist.albums.find(a => a.albumId === albumId || a.globalAlbumId === albumId);
   if (!album) {
-    return res.status(404).json({ message: `Album not found for this ${artist.artistName}` });
+    return res.status(404).json({ message: `Album not found for artist ${artist.artistName}` });
   }
 
   res.json(album);
 });
 
-// GET /albums → list all albums from all artists
-app.get("/albums", (req, res) => {
-  //const allAlbums = artists.flatMap(a => a.albums);
-  res.json(allAlbums);
+// GET /albums/:globalAlbumId → get a specific album
+app.get("/albums/:globalAlbumId", (req, res) => {
+  const globalAlbumId = parseInt(req.params.globalAlbumId, 10);
+
+  const album = allAlbums.find(a => a.globalAlbumId === globalAlbumId);
+  if (!album) {
+    return res.status(404).json({ message: "Album not found" });
+  }
+
+  res.json(album);
 });
 
+// DELETE /artists/:artistId → delete a specific artist (and all the albums from that artist)
+app.delete("/artists/:artistId", (req, res) => {
+  const artistId = parseInt(req.params.artistId, 10);
+
+  const artistIndex = artists.findIndex(a => a.artistId === artistId);
+  if (artistIndex === -1) {
+    return res.status(404).json({ message: "Artist not found for deletion" });
+  } else {
+    //const artist = artists[artistIndex];
+    const deletedArtist = artists.splice(artistIndex, 1)[0];
+    const albums = deletedArtist.albums;
+    for (var i = 0; i < albums.length; i++) {
+      const album = albums[i];
+      const index = allAlbums.findIndex(a => a.globalAlbumId === album.globalAlbumId);
+      allAlbums.splice(index, 1);
+    }
+
+    return res.json({
+      message: "Artist and albums deleted successfully",
+      artist: deletedArtist
+    });
+  }
+});
+
+// DELETE /artists/:artistId/:albumId → delete a specific album from that artist
+app.delete("/artists/:artistId/:albumId", (req, res) => {
+  const artistId = parseInt(req.params.artistId, 10);
+  const albumId = parseInt(req.params.albumId, 10);
+
+  const artist = artists.find(a => a.artistId === artistId);
+  if (!artist) {
+    return res.status(404).json({ message: "Artist not found for album deletion" });
+  }
+
+  const index = artist.albums.findIndex(a => a.albumId === albumId);
+  if (index !== -1) {
+    const deletedAlbum = artist.albums.splice(index, 1)[0];
+    artist.numberOfAlbumsReleased = artist.albums.length;
+    if (deletedAlbum !== undefined && deletedAlbum !== null && deletedAlbum.globalAlbumId !== -1) {
+      const index2 = allAlbums.findIndex(a => a.globalAlbumId === deletedAlbum.globalAlbumId);
+      const deletedAlbum2 = allAlbums.splice(index2, 1)[0];
+      if (deletedAlbum !== deletedAlbum2) {
+        console.log("There was a problem with deletion. The album deleted from the artist isn't the same as the album deleted from the albums collection.")
+        console.log("Arist version:". deletedAlbum);
+        console.log("All Albums version:", deletedAlbum2);
+      }
+    }
+
+    return res.json({
+      message: "Album deleted successfully",
+      album: deletedAlbum
+    });
+  } else {    
+    res.status(404).json({ message: `Album not found for artist ${artist.artistName}` });
+  }
+});
+
+// DELETE /albums/:globalAlbumId → delete a specific album
+app.delete("/albums/:globalAlbumId", (req, res) => {
+  const globalAlbumId = parseInt(req.params.globalAlbumId, 10);
+  
+  const index = allAlbums.findIndex(a => a.globalAlbumId === globalAlbumId);
+  if (index !== -1) {
+    const deletedAlbum = allAlbums.splice(index, 1)[0];
+    if (deletedAlbum !== undefined && deletedAlbum !== null && deletedAlbum.artistId !== -1 &&
+      deletedAlbum.albumId !== -1) {
+        const artist = artists.find(a => a.artistId === deletedAlbum.artistId);
+        if (artist) {
+          const index2 = artist.albums.findIndex(a => a.albumId === deletedAlbum.albumId);
+          const deletedAlbum2 = artist.albums.splice(index2, 1)[0];
+          artist.numberOfAlbumsReleased = artist.albums.length;
+          if (deletedAlbum !== deletedAlbum2) {
+            console.log("There was a problem with deletion. The album deleted from the artist isn't the same as the album deleted from the albums collection.")
+            console.log("Arist version:". deletedAlbum);
+            console.log("All Albums version:", deletedAlbum2);
+          }
+        }
+    }
+
+    return res.json({
+      message: "Album deleted successfully",
+      album: deletedAlbum
+    });
+  } else {
+    res.status(404).json({ message: `Album not found` });
+  }
+});
 
 // ------------------------------
 // Statically Hosted Images
