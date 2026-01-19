@@ -199,7 +199,6 @@ app.delete("/artists/:artistId", (req, res) => {
   if (artistIndex === -1) {
     return res.status(404).json({ message: "Artist not found for deletion" });
   } else {
-    //const artist = artists[artistIndex];
     const deletedArtist = artists.splice(artistIndex, 1)[0];
     const albums = deletedArtist.albums;
     for (var i = 0; i < albums.length; i++) {
@@ -209,7 +208,10 @@ app.delete("/artists/:artistId", (req, res) => {
     }
 
     return res.json({
-      message: "Artist and albums deleted successfully",
+      //message: "Artist and albums deleted successfully",
+      message: `Successfully deleted ${deletedArtist.artistName} and all of their albums!`,
+      deletionType: 'artist',
+      deleted: true,
       artist: deletedArtist
     });
   }
@@ -240,7 +242,9 @@ app.delete("/artists/:artistId/:albumId", (req, res) => {
     }
 
     return res.json({
-      message: "Album deleted successfully",
+      message: `Successfully deleted ${deletedAlbum.albumName} (${deletedAlbum.publicationYear}) by ${deletedAlbum.artistName}!`,
+      deletionType: 'album',
+      deleted: true,
       album: deletedAlbum
     });
   } else {    
@@ -271,7 +275,9 @@ app.delete("/albums/:globalAlbumId", (req, res) => {
     }
 
     return res.json({
-      message: "Album deleted successfully",
+      message: `Successfully deleted ${deletedAlbum.albumName} (${deletedAlbum.publicationYear}) by ${deletedAlbum.artistName}.`,
+      deletionType: 'album',
+      deleted: true,
       album: deletedAlbum
     });
   } else {
