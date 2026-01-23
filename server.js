@@ -38,9 +38,22 @@ function generateArtists() {
     copyAlbumNames.splice(randIndex, 1);
   }
 
-  for (let i = 1; i <= 30; i++) {
+  // Randomize artist names list
+  const copyArtistNames = [...artistNames];
+  let newArtistNames = [];
+  var numOfArtists = Math.floor(Math.random() * 20) + 50;
+  for (var i = 0; i < numOfArtists; i++) {
+    const randIndex = Math.floor(Math.random() * copyArtistNames.length);
+    const artistName = copyArtistNames[randIndex];
+    newArtistNames.push(artistName);
+    copyAlbumNames.splice(randIndex, 1);
+  }
+
+  // TODO: Select a random number for the number of artists between 60 and 75
+
+  for (let i = 1; i <= numOfArtists; i++) {
     const albumCount = Math.floor(Math.random() * 9) + 2; // 2–10 albums
-    const artistName = artistNames[i - 1];
+    const artistName = newArtistNames[i - 1];
     const albums = [];
 
     for (let j = 1; j <= albumCount; j++) {
@@ -94,7 +107,11 @@ function generateArtists() {
       });
     }
 
-    const numOfMembers = Math.floor(Math.random() * 5) + 1;
+    let numOfMembers = 1;
+    const isGroup = Math.random() > 0.5;
+    if (isGroup) {
+      numOfMembers = Math.floor(Math.random() * 7) + 2;
+    }
 
     artists.push({
       artistId: i,      
@@ -102,7 +119,7 @@ function generateArtists() {
       artistImageRandNum: parseFloat(Math.random().toFixed(6)),
       yearStarted: 1970 + Math.floor(Math.random() * 50),
       numberOfMembers: numOfMembers,
-      isGroup: numOfMembers > 1,
+      isGroup: isGroup,
       countryOfOrigin: countries[Math.floor(Math.random() * countries.length)],
       isTouring: Math.random() > 0.5,
       numberOfAlbumsReleased: albumCount,
